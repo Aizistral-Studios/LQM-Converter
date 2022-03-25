@@ -7,7 +7,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipFile;
 
@@ -22,6 +24,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class LQMConverter {
+    private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("dd.MM.yyyy, HH:mm:ss");
+    private static final int DELAY = 5;
 
     public static void main(String... args) {
         new ConverterGUI();
@@ -53,7 +57,7 @@ public class LQMConverter {
 
         for (File lqmFile : inputs) {
             bar.setString("Reading " + lqmFile.getName());
-            trySleep(10);
+            trySleep(DELAY);
 
             try (ZipFile zip = new ZipFile(lqmFile)) {
                 InputStream stream = zip.getInputStream(zip.getEntry("memoinfo.jlqm"));
@@ -63,7 +67,14 @@ public class LQMConverter {
                 try {
                     JsonParser jsonParser = new JsonParser();
                     JsonObject jsonObject = (JsonObject) jsonParser.parse(new InputStreamReader(stream, "UTF-8"));
-                    JsonArray array = (JsonArray) jsonObject.get("MemoObjectList");
+                    JsonObject memo = jsonObject.get("Memo").getAsJsonObject();
+                    JsonArray array = jsonObject.get("MemoObjectList").getAsJsonArray();
+
+                    long created = memo.get("CreatedTime").getAsLong();
+                    long modified = memo.get("ModifiedTime").getAsLong();
+
+                    text += "Created: " + FORMATTER.format(new Date(created)) + System.lineSeparator();
+                    text += "Last Modified: " + FORMATTER.format(new Date(modified)) + System.lineSeparator();
 
                     for (int i = 0; i< array.size(); i++) {
                         JsonElement element = ((JsonObject) array.get(i)).get("DescRaw");
@@ -71,7 +82,7 @@ public class LQMConverter {
                         if (element != null) {
                             String raw = element.getAsString();
                             if (!text.equals("")) {
-                                text += System.lineSeparator() + System.lineSeparator() + System.lineSeparator();
+                                text += System.lineSeparator();
 
                             }
 
@@ -86,7 +97,7 @@ public class LQMConverter {
                 if (noError) {
                     File outputFile = new File(output, lqmFile.getName().substring(0, lqmFile.getName().length()-4) + ".txt");
                     bar.setString("Writing " + outputFile.getName());
-                    trySleep(10);
+                    trySleep(DELAY);
                     FileUtils.write(outputFile, text, Charset.forName("UTF-8"));
                 }
             } catch (IOException ex) {
