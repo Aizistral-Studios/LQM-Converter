@@ -21,5 +21,4 @@ eclipse/*
 .factorypath
 
 forge*changelog.txt
-!build/libs
 /.apt_generated/
