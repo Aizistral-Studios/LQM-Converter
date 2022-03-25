@@ -22,3 +22,4 @@ eclipse/*
 
 forge*changelog.txt
 !build/libs
+/.apt_generated/
