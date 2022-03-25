@@ -46,6 +46,7 @@ public class ConverterGUI extends JFrame {
         this.contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         this.setContentPane(this.contentPane);
         this.setFocusable(true);
+        this.setLocationRelativeTo(null);
 
         this.selectLQMFiles = new JTextField();
         this.selectLQMFiles.setMargin(new Insets(0, 7, 0, 0));
